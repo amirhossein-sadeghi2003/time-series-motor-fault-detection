@@ -1,0 +1,14 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*.swn
+
+# Keep generated portfolio outputs if intentionally added
+# Ignore temporary files
+*.tmp
