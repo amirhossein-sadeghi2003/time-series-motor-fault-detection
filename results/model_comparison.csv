@@ -1,0 +1,5 @@
+model,accuracy,macro_f1
+Decision Tree,1.0,1.0
+Random Forest,1.0,1.0
+SVM,1.0,1.0
+MLP Neural Network,1.0,1.0
