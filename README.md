@@ -68,6 +68,18 @@ AI / ML for intelligent physical and sensor-based systems
 
 This project uses a subset of the CWRU Bearing Fault Dataset.
 
+Dataset source:
+
+```text
+Case Western Reserve University Bearing Data Center
+```
+
+Official dataset page:
+
+```text
+https://engineering.case.edu/bearingdatacenter/download-data-file
+```
+
 Used data categories:
 
 | Class | Source |
@@ -90,6 +102,8 @@ The processed feature dataset is tracked:
 ```text
 data/processed/cwru_bearing_features.csv
 ```
+
+Detailed dataset download and organization notes are available in [`docs/dataset.md`](docs/dataset.md).
 
 ---
 
@@ -189,6 +203,14 @@ src/train_models.py
 
 The models use median imputation for missing RPM values. SVM and MLP also use feature scaling.
 
+Generated model files are saved locally under:
+
+```text
+models/
+```
+
+Model artifacts are ignored by Git because they can be regenerated from the training script.
+
 ---
 
 ## Evaluation Strategy
@@ -262,6 +284,8 @@ time-series-motor-fault-detection/
 ├── data/
 │   └── processed/
 │       └── cwru_bearing_features.csv
+├── docs/
+│   └── dataset.md
 ├── results/
 │   ├── confusion_matrix_decision_tree.png
 │   ├── confusion_matrix_mlp_neural_network.png
@@ -287,6 +311,7 @@ Important files:
 - `src/load_cwru_data.py` — loads CWRU `.mat` files, extracts drive-end vibration windows, and builds the processed feature dataset
 - `src/train_models.py` — trains and compares Decision Tree, Random Forest, SVM, and MLP Neural Network models
 - `data/processed/cwru_bearing_features.csv` — processed feature dataset
+- `docs/dataset.md` — dataset download, subset, and organization notes
 - `results/model_comparison.csv` — model comparison table
 - `results/` — confusion matrices and plots
 
