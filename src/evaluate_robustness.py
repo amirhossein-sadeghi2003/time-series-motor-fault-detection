@@ -168,18 +168,28 @@ def run_robustness_experiment():
 
     return results_df
 
-
 def plot_metric(results_df, metric_mean, metric_std, ylabel, title, output_path):
     fig, ax = plt.subplots(figsize=(9, 5))
 
+    style_map = {
+        "Decision Tree": {"marker": "o", "linestyle": "-"},
+        "Random Forest": {"marker": "s", "linestyle": "--"},
+        "SVM": {"marker": "^", "linestyle": "-."},
+        "MLP Neural Network": {"marker": "D", "linestyle": ":"},
+    }
+
     for model_name, model_df in results_df.groupby("model"):
         model_df = model_df.sort_values("noise_level")
+        style = style_map.get(model_name, {"marker": "o", "linestyle": "-"})
 
         ax.errorbar(
             model_df["noise_level"],
             model_df[metric_mean],
             yerr=model_df[metric_std],
-            marker="o",
+            marker=style["marker"],
+            linestyle=style["linestyle"],
+            linewidth=2,
+            markersize=6,
             capsize=3,
             label=model_name,
         )
@@ -187,9 +197,9 @@ def plot_metric(results_df, metric_mean, metric_std, ylabel, title, output_path)
     ax.set_xlabel("Feature noise level")
     ax.set_ylabel(ylabel)
     ax.set_title(title)
-    ax.set_ylim(0, 1.05)
+    ax.set_ylim(0.70, 1.02)
     ax.grid(True, alpha=0.3)
-    ax.legend()
+    ax.legend(loc="lower left")
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150)
