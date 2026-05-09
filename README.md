@@ -2,7 +2,7 @@
 
 Machine learning project for bearing fault diagnosis using real vibration data from the Case Western Reserve University Bearing Data Center.
 
-This project uses time-series vibration signals from a motor bearing test rig and compares multiple machine learning models, including a neural network, for fault classification.
+This project uses time-series vibration signals from a motor bearing test rig and compares multiple machine learning models, including a neural network, for fault classification. It also includes a robustness analysis to evaluate how trained models behave when engineered test features are perturbed with noise.
 
 The project connects:
 
@@ -11,6 +11,7 @@ The project connects:
 - time-series feature extraction
 - supervised machine learning
 - neural network baseline
+- robustness analysis
 - condition monitoring
 - intelligent physical systems
 
@@ -34,8 +35,10 @@ CWRU .mat files
 → drive-end vibration signal extraction
 → fixed-size time-window segmentation
 → statistical feature extraction
+→ file-level train/test split
 → model training and comparison
 → confusion matrices and feature importance analysis
+→ robustness evaluation under feature noise
 ```
 
 ---
@@ -47,6 +50,8 @@ Many real industrial and cyber-physical systems depend on sensors to monitor the
 Bearing faults are important because they can indicate early mechanical degradation in motors, pumps, fans, and other rotating systems.
 
 This project demonstrates how real vibration data can be converted into a machine-learning classification pipeline for condition monitoring.
+
+The robustness analysis adds an additional practical perspective by testing how model performance changes when engineered test features are perturbed. This is important because real sensor systems may experience noise, measurement variation, environmental effects, or operating-condition changes.
 
 It complements my other projects in:
 
@@ -232,7 +237,7 @@ This gives a more realistic evaluation than random window-level splitting.
 
 ---
 
-## Results
+## Baseline Results
 
 All models achieved perfect classification on the selected CWRU benchmark subset.
 
@@ -246,6 +251,50 @@ All models achieved perfect classification on the selected CWRU benchmark subset
 These results show that the selected CWRU subset is highly separable using the extracted statistical features.
 
 However, this should be interpreted carefully. The dataset is a controlled benchmark subset, not a proof of general industrial reliability across all machines, operating conditions, and sensor placements.
+
+---
+
+## Robustness Analysis Under Feature Noise
+
+To better understand model behavior beyond clean benchmark accuracy, this project includes a robustness experiment.
+
+The models are trained on clean training features and then evaluated on perturbed test features. Gaussian noise is added to each engineered feature in proportion to the feature's standard deviation in the training set.
+
+Noise levels tested:
+
+```text
+0.00, 0.01, 0.03, 0.05, 0.10, 0.20, 0.30
+```
+
+Each noise level is evaluated over 5 repeated random perturbations.
+
+Robustness script:
+
+```text
+src/evaluate_robustness.py
+```
+
+Generated outputs:
+
+```text
+results/robustness_results.csv
+results/robustness_accuracy_vs_noise.png
+results/robustness_macro_f1_vs_noise.png
+```
+
+### Robustness Accuracy
+
+![Robustness Accuracy vs Noise](results/robustness_accuracy_vs_noise.png)
+
+### Robustness Macro F1-score
+
+![Robustness Macro F1 vs Noise](results/robustness_macro_f1_vs_noise.png)
+
+At higher feature-noise levels, the Decision Tree shows the largest performance drop, while SVM and MLP remain comparatively more stable. Random Forest also shows stronger robustness than the single Decision Tree.
+
+This analysis makes the project more realistic by showing how different model families respond when the test data becomes less ideal.
+
+Important note: this experiment perturbs engineered features, not the original raw vibration signal. It should be interpreted as a feature-level robustness test rather than a full sensor-domain shift experiment.
 
 ---
 
@@ -293,12 +342,17 @@ time-series-motor-fault-detection/
 │   ├── confusion_matrix_svm.png
 │   ├── feature_importance_random_forest.png
 │   ├── model_comparison.csv
-│   └── model_comparison.png
+│   ├── model_comparison.png
+│   ├── robustness_accuracy_vs_noise.png
+│   ├── robustness_macro_f1_vs_noise.png
+│   └── robustness_results.csv
 ├── src/
+│   ├── evaluate_robustness.py
 │   ├── load_cwru_data.py
 │   └── train_models.py
 ├── requirements.txt
 ├── .gitignore
+├── LICENSE
 └── README.md
 ```
 
@@ -308,12 +362,29 @@ time-series-motor-fault-detection/
 
 Important files:
 
-- `src/load_cwru_data.py` — loads CWRU `.mat` files, extracts drive-end vibration windows, and builds the processed feature dataset
-- `src/train_models.py` — trains and compares Decision Tree, Random Forest, SVM, and MLP Neural Network models
-- `data/processed/cwru_bearing_features.csv` — processed feature dataset
-- `docs/dataset.md` — dataset download, subset, and organization notes
-- `results/model_comparison.csv` — model comparison table
-- `results/` — confusion matrices and plots
+- `src/load_cwru_data.py`  
+  Loads CWRU `.mat` files, extracts drive-end vibration windows, and builds the processed feature dataset.
+
+- `src/train_models.py`  
+  Trains and compares Decision Tree, Random Forest, SVM, and MLP Neural Network models.
+
+- `src/evaluate_robustness.py`  
+  Evaluates trained model families under feature-level noise perturbations and generates robustness plots.
+
+- `data/processed/cwru_bearing_features.csv`  
+  Processed feature dataset.
+
+- `docs/dataset.md`  
+  Dataset download, subset, and organization notes.
+
+- `results/model_comparison.csv`  
+  Model comparison table for the clean benchmark split.
+
+- `results/robustness_results.csv`  
+  Robustness results across feature-noise levels.
+
+- `results/`  
+  Confusion matrices, model comparison plots, feature importance, and robustness plots.
 
 ---
 
@@ -344,6 +415,12 @@ Train and compare models:
 python src/train_models.py
 ```
 
+Run robustness analysis:
+
+```bash
+python src/evaluate_robustness.py
+```
+
 ---
 
 ## Dependencies
@@ -370,6 +447,7 @@ It is especially useful because it includes:
 - feature extraction
 - model comparison
 - neural network baseline
+- robustness analysis
 - clear evaluation plots
 
 It strengthens the AI/ML side of a portfolio focused on intelligent physical systems.
@@ -385,7 +463,8 @@ This project has several limitations:
 - only drive-end vibration signals are used
 - features are manually engineered statistical features
 - evaluation is done on a controlled benchmark dataset
-- results may not generalize directly to different machines or real industrial environments
+- robustness analysis is currently performed on engineered features, not directly on raw vibration signals
+- results may not generalize directly to different machines, operating conditions, sensor placements, or fault severities
 
 These limitations are important and motivate future extensions.
 
@@ -403,6 +482,7 @@ Possible next steps:
 - test deeper neural network models
 - compare classical features with raw-signal neural models
 - add anomaly detection for unseen fault types
+- evaluate robustness under raw-signal noise and operating-condition shift
 
 ---
 
@@ -412,4 +492,4 @@ This project demonstrates bearing fault diagnosis using real vibration time-seri
 
 It shows how vibration signals from rotating machinery can be transformed into an interpretable feature dataset and used for fault classification.
 
-The project includes both classical machine learning models and an MLP neural network baseline, making it a useful AI/ML project connected to real physical systems and condition monitoring.
+The project includes classical machine learning models, an MLP neural network baseline, feature importance analysis, and robustness evaluation under feature noise. This makes it a useful AI/ML project connected to real physical systems, condition monitoring, and intelligent monitoring applications.
